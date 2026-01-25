@@ -77,33 +77,40 @@ To test the platform, you'll need to:
 
 1. **Create an account**: Sign up through the application
 2. **Create a venue**: Navigate to Admin → Add Venue
-3. **Add tables**: After creating a restaurant/café, add tables in the venue edit page
-4. **Set availability rules**: This is REQUIRED to enable bookings
+3. **Edit your venue**: Click "Edit" on your newly created venue
+4. **Set operating hours**: Scroll to the "Operating Hours" section and configure your schedule (REQUIRED)
+5. **Add tables**: Scroll to "Tables Management" and add tables for your restaurant/café
 
-#### Adding Availability Rules (REQUIRED)
+#### Setting Operating Hours (REQUIRED)
 
-**Without availability rules, the time selection will be disabled and customers cannot make bookings.**
+**Without operating hours configured, the time selection will be disabled and customers cannot make bookings.**
 
-The easiest way to add availability rules is to use the `add-availability-rules.sql` file:
+To configure your venue's operating hours:
 
-1. Open your Supabase project dashboard
-2. Go to SQL Editor
-3. Open the `add-availability-rules.sql` file in this project
-4. Find your venue ID by running:
-   ```sql
-   SELECT id, name FROM venues WHERE owner_id = auth.uid();
-   ```
-5. Copy your venue ID
-6. In the `add-availability-rules.sql` file, replace `YOUR_VENUE_ID` with your actual venue ID
-7. Choose one of the preset schedules (Restaurant, Café, or custom)
-8. Run the INSERT statements
+1. Go to **Admin → Edit Venue** (click the Edit button on your venue)
+2. Scroll down to the **Operating Hours** section
+3. For each day of the week:
+   - Check the box to mark the day as open
+   - Set opening and closing times
+   - Configure slot duration (how long each reservation lasts, e.g., 90 minutes)
+   - Set advance booking days (how far ahead customers can book, e.g., 30 days)
+   - Set minimum and maximum party sizes
+4. Use **"Copy to All Open Days"** to apply the same settings to all checked days
+5. Click **"Save Operating Hours"**
 
-The file includes three common schedules:
-- **Standard Restaurant**: 11 AM - 10 PM daily (later on weekends)
-- **Lunch & Dinner**: Split shifts with a break between services
-- **Café Hours**: 7 AM - 6 PM daily
+**Example Settings:**
+- Open Time: 11:00 AM
+- Close Time: 10:00 PM
+- Slot Duration: 90 minutes (typical for restaurants)
+- Advance Booking Days: 30 days
+- Min Party Size: 1
+- Max Party Size: 12
 
-After adding availability rules, refresh your venue page and you'll see available time slots!
+Once saved, your venue will immediately show available time slots for bookings!
+
+#### Alternative: SQL Method
+
+If you prefer, you can still use the `add-availability-rules.sql` file with SQL queries in your Supabase dashboard, but the UI method above is much easier.
 
 ## User Flows
 

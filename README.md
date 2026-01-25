@@ -20,8 +20,8 @@ ReserveHub is a unified reservation platform built for MVP v1, focusing on resta
 **For Venue Owners:**
 - Create and manage multiple venues
 - Add and manage tables/inventory
+- Configure operating hours with intuitive UI (days, times, booking rules)
 - View all bookings for owned venues
-- Set availability rules and operating hours
 - Track booking statistics
 
 ## Tech Stack
@@ -82,8 +82,10 @@ npm run dev
 1. Create an account through the application
 2. Navigate to Admin → Add Venue
 3. Create your first venue with details
-4. Add tables in the venue edit page
-5. Add availability rules via SQL (see `sample-data.sql`)
+4. Click Edit on your venue
+5. Configure operating hours in the Operating Hours section
+6. Add tables in the Tables Management section
+7. Your venue is now ready for bookings!
 
 See `SETUP_GUIDE.md` for detailed instructions.
 
