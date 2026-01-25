@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, MapPin, Star, DollarSign, Clock, Users, Calendar } from 'lucide-react';
+import { ArrowLeft, MapPin, Star, DollarSign, Clock, Users, Calendar, AlertCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Venue, AvailabilityRule, BookableUnit } from '../types';
 import { useAuth } from '../contexts/AuthContext';
@@ -177,71 +177,104 @@ export function VenueDetail({ venueId, onNavigate }: VenueDetailProps) {
             <div className="border-t pt-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-6">Make a Reservation</h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Calendar className="inline h-4 w-4 mr-1" />
-                    Date
-                  </label>
-                  <input
-                    type="date"
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                    min={getMinDate()}
-                    max={getMaxDate()}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
+              {availabilityRules.length === 0 ? (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                  <div className="flex items-start space-x-3">
+                    <AlertCircle className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h3 className="font-semibold text-yellow-900 mb-2">Reservations Not Available</h3>
+                      <p className="text-sm text-yellow-800 mb-3">
+                        This venue hasn't set up their availability schedule yet. Please check back later or contact the venue directly.
+                      </p>
+                      {venue.contact?.phone && (
+                        <p className="text-sm text-yellow-800">
+                          Phone: <a href={`tel:${venue.contact.phone}`} className="underline">{venue.contact.phone}</a>
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <Calendar className="inline h-4 w-4 mr-1" />
+                        Date
+                      </label>
+                      <input
+                        type="date"
+                        value={selectedDate}
+                        onChange={(e) => {
+                          setSelectedDate(e.target.value);
+                          setSelectedTime('');
+                        }}
+                        min={getMinDate()}
+                        max={getMaxDate()}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Clock className="inline h-4 w-4 mr-1" />
-                    Time
-                  </label>
-                  <select
-                    value={selectedTime}
-                    onChange={(e) => setSelectedTime(e.target.value)}
-                    disabled={!selectedDate || todayRules.length === 0}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Select time</option>
-                    {todayRules.map((rule) => {
-                      const slots = generateTimeSlots(rule.open_time, rule.close_time, rule.slot_duration_minutes);
-                      return slots.map((slot) => (
-                        <option key={slot} value={slot}>
-                          {slot}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <Clock className="inline h-4 w-4 mr-1" />
+                        Time
+                      </label>
+                      <select
+                        value={selectedTime}
+                        onChange={(e) => setSelectedTime(e.target.value)}
+                        disabled={!selectedDate || todayRules.length === 0}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed"
+                      >
+                        <option value="">
+                          {!selectedDate
+                            ? 'Select a date first'
+                            : todayRules.length === 0
+                            ? 'Closed on this day'
+                            : 'Select time'}
                         </option>
-                      ));
-                    })}
-                  </select>
-                </div>
+                        {todayRules.map((rule) => {
+                          const slots = generateTimeSlots(rule.open_time, rule.close_time, rule.slot_duration_minutes);
+                          return slots.map((slot) => (
+                            <option key={slot} value={slot}>
+                              {slot}
+                            </option>
+                          ));
+                        })}
+                      </select>
+                      {selectedDate && todayRules.length === 0 && (
+                        <p className="mt-1 text-sm text-red-600">This venue is closed on the selected day</p>
+                      )}
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Users className="inline h-4 w-4 mr-1" />
-                    Party Size
-                  </label>
-                  <select
-                    value={partySize}
-                    onChange={(e) => setPartySize(Number(e.target.value))}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <Users className="inline h-4 w-4 mr-1" />
+                        Party Size
+                      </label>
+                      <select
+                        value={partySize}
+                        onChange={(e) => setPartySize(Number(e.target.value))}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map((size) => (
+                          <option key={size} value={size}>
+                            {size} {size === 1 ? 'person' : 'people'}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={handleBookNow}
+                    disabled={!selectedDate || !selectedTime}
+                    className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                   >
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map((size) => (
-                      <option key={size} value={size}>
-                        {size} {size === 1 ? 'person' : 'people'}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <button
-                onClick={handleBookNow}
-                disabled={!selectedDate || !selectedTime}
-                className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                {user ? 'Continue to Booking' : 'Sign In to Book'}
-              </button>
+                    {user ? 'Continue to Booking' : 'Sign In to Book'}
+                  </button>
+                </>
+              )}
             </div>
           )}
         </div>

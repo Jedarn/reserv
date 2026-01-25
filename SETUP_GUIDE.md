@@ -78,28 +78,32 @@ To test the platform, you'll need to:
 1. **Create an account**: Sign up through the application
 2. **Create a venue**: Navigate to Admin → Add Venue
 3. **Add tables**: After creating a restaurant/café, add tables in the venue edit page
-4. **Set availability rules**: Use the SQL query below in your Supabase dashboard
+4. **Set availability rules**: This is REQUIRED to enable bookings
 
-#### Sample Availability Rules SQL
+#### Adding Availability Rules (REQUIRED)
 
-Run this in your Supabase SQL Editor (replace `YOUR_VENUE_ID` with your actual venue ID):
+**Without availability rules, the time selection will be disabled and customers cannot make bookings.**
 
-```sql
--- Add availability rules for a restaurant (Monday-Friday)
-INSERT INTO availability_rules (venue_id, day_of_week, open_time, close_time, slot_duration_minutes, advance_booking_days, min_party_size, max_party_size, is_active)
-VALUES
-  ('YOUR_VENUE_ID', 1, '11:00:00', '22:00:00', 90, 30, 1, 12, true),
-  ('YOUR_VENUE_ID', 2, '11:00:00', '22:00:00', 90, 30, 1, 12, true),
-  ('YOUR_VENUE_ID', 3, '11:00:00', '22:00:00', 90, 30, 1, 12, true),
-  ('YOUR_VENUE_ID', 4, '11:00:00', '22:00:00', 90, 30, 1, 12, true),
-  ('YOUR_VENUE_ID', 5, '11:00:00', '23:00:00', 90, 30, 1, 12, true);
+The easiest way to add availability rules is to use the `add-availability-rules.sql` file:
 
--- Weekend hours (Saturday-Sunday)
-INSERT INTO availability_rules (venue_id, day_of_week, open_time, close_time, slot_duration_minutes, advance_booking_days, min_party_size, max_party_size, is_active)
-VALUES
-  ('YOUR_VENUE_ID', 6, '10:00:00', '23:00:00', 90, 30, 1, 12, true),
-  ('YOUR_VENUE_ID', 0, '10:00:00', '23:00:00', 90, 30, 1, 12, true);
-```
+1. Open your Supabase project dashboard
+2. Go to SQL Editor
+3. Open the `add-availability-rules.sql` file in this project
+4. Find your venue ID by running:
+   ```sql
+   SELECT id, name FROM venues WHERE owner_id = auth.uid();
+   ```
+5. Copy your venue ID
+6. In the `add-availability-rules.sql` file, replace `YOUR_VENUE_ID` with your actual venue ID
+7. Choose one of the preset schedules (Restaurant, Café, or custom)
+8. Run the INSERT statements
+
+The file includes three common schedules:
+- **Standard Restaurant**: 11 AM - 10 PM daily (later on weekends)
+- **Lunch & Dinner**: Split shifts with a break between services
+- **Café Hours**: 7 AM - 6 PM daily
+
+After adding availability rules, refresh your venue page and you'll see available time slots!
 
 ## User Flows
 
@@ -192,13 +196,55 @@ npm run lint
 - Optimistic UI updates with rollback on error
 - Future: Redis for caching and real-time hold coordination
 
+## Troubleshooting
+
+### Time Selection is Disabled / Grayed Out
+
+**Problem**: The time dropdown is disabled and shows "Select a date first" or "Closed on this day"
+
+**Solution**: This happens when:
+1. **No availability rules exist**: You must add availability rules to your venue using the `add-availability-rules.sql` script
+2. **Venue is closed on selected day**: The venue has no availability rules for that specific day of the week
+3. **No date selected**: Select a date first before choosing a time
+
+To fix: Run the availability rules SQL script in your Supabase dashboard (see "Adding Availability Rules" section above)
+
+### Cannot See Any Venues
+
+**Problem**: Home page shows "No venues found"
+
+**Solution**:
+1. Make sure you've created at least one venue via Admin → Add Venue
+2. Ensure the venue's `is_active` field is set to `true`
+3. Sign out and sign back in to refresh your session
+
+### Booking Shows "No tables available"
+
+**Problem**: When trying to book, all tables show as unavailable
+
+**Solution**:
+1. Make sure you've added tables to your venue (Admin → Edit Venue → Tables Management)
+2. Check that tables are marked as `is_active = true`
+3. Verify there are no conflicting bookings or active holds for that time slot
+4. Try a different time slot or date
+
+### Cannot Access Admin Dashboard
+
+**Problem**: Admin link is not showing or not accessible
+
+**Solution**:
+1. Make sure you're signed in
+2. The Admin link only appears for authenticated users
+3. Sign out and sign back in to refresh authentication state
+
 ## Support
 
 For issues or questions about the platform:
-1. Check this guide for common setup steps
-2. Review database schema and RLS policies
+1. Check this troubleshooting section first
+2. Review database schema and RLS policies in Supabase dashboard
 3. Inspect browser console for frontend errors
 4. Check Supabase dashboard for database errors
+5. Verify environment variables are correctly set
 
 ---
 
