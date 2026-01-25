@@ -103,7 +103,11 @@ export function VenueDetail({ venueId, onNavigate }: VenueDetailProps) {
     );
   }
 
-  const dayOfWeek = selectedDate ? new Date(selectedDate).getDay() : -1;
+  // Parse date without timezone issues (treat as local date)
+  const dayOfWeek = selectedDate ? (() => {
+    const [year, month, day] = selectedDate.split('-').map(Number);
+    return new Date(year, month - 1, day).getDay();
+  })() : -1;
   const todayRules = availabilityRules.filter(r => r.day_of_week === dayOfWeek);
 
   return (
@@ -295,10 +299,15 @@ function generateTimeSlots(openTime: string, closeTime: string, slotDuration: nu
   const closeMin = parseInt(closeParts[1]);
 
   let currentMinutes = openHour * 60 + openMin;
-  const closeMinutes = closeHour * 60 + closeMin;
+  let closeMinutes = closeHour * 60 + closeMin;
+
+  // If close time is before open time, it means it's the next day (e.g., 2 AM after 8 PM)
+  if (closeMinutes <= currentMinutes) {
+    closeMinutes += 24 * 60; // Add 24 hours
+  }
 
   while (currentMinutes + slotDuration <= closeMinutes) {
-    const hours = Math.floor(currentMinutes / 60);
+    const hours = Math.floor(currentMinutes / 60) % 24; // Wrap around after 24 hours
     const mins = currentMinutes % 60;
     const timeString = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
     slots.push(timeString);
