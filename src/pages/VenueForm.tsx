@@ -26,8 +26,14 @@ interface DaySchedule {
 }
 
 export function VenueForm({ mode, venueId, onNavigate }: VenueFormProps) {
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const [loading, setLoading] = useState(mode === 'edit');
+
+  useEffect(() => {
+    if (userRole && userRole !== 'ADMIN') {
+      onNavigate('home');
+    }
+  }, [userRole]);
   const [saving, setSaving] = useState(false);
 
   const [name, setName] = useState('');

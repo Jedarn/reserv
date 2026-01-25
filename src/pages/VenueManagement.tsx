@@ -48,7 +48,7 @@ interface VenueManagementProps {
 }
 
 export function VenueManagement({ onNavigate }: VenueManagementProps) {
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const [venues, setVenues] = useState<Venue[]>([]);
   const [selectedVenue, setSelectedVenue] = useState<string | null>(null);
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -57,6 +57,12 @@ export function VenueManagement({ onNavigate }: VenueManagementProps) {
   const [loading, setLoading] = useState(true);
   const [showAddTableModal, setShowAddTableModal] = useState(false);
   const [editingTable, setEditingTable] = useState<BookableUnit | null>(null);
+
+  useEffect(() => {
+    if (userRole && userRole === 'CUSTOMER') {
+      onNavigate('home');
+    }
+  }, [userRole]);
 
   useEffect(() => {
     loadVenues();

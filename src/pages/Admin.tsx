@@ -9,10 +9,16 @@ interface AdminProps {
 }
 
 export function Admin({ onNavigate }: AdminProps) {
-  const { user } = useAuth();
+  const { user, userRole } = useAuth();
   const [venues, setVenues] = useState<Venue[]>([]);
   const [bookingsCount, setBookingsCount] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (userRole && userRole !== 'ADMIN') {
+      onNavigate('home');
+    }
+  }, [userRole]);
 
   useEffect(() => {
     if (user) {
