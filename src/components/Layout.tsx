@@ -1,4 +1,4 @@
-import { Home, Calendar, User, LogOut, Building2, Menu, X, Settings } from 'lucide-react';
+import { Home, Calendar, User, LogOut, Building2, Menu, X, Settings, RefreshCw } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 
@@ -9,8 +9,9 @@ interface LayoutProps {
 }
 
 export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
-  const { user, userRole, signOut } = useAuth();
+  const { user, userRole, signOut, refreshRole } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const isManager = userRole === 'MANAGER' || userRole === 'ADMIN';
   const isAdmin = userRole === 'ADMIN';
@@ -18,6 +19,12 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
   const handleSignOut = async () => {
     await signOut();
     onNavigate('home');
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refreshRole();
+    setTimeout(() => setRefreshing(false), 1000);
   };
 
   return (
@@ -96,9 +103,22 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
             <div className="hidden md:flex items-center space-x-4">
               {user ? (
                 <>
-                  <div className="flex items-center space-x-2 text-sm text-gray-700">
-                    <User className="h-4 w-4" />
-                    <span>{user.email}</span>
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-2 text-sm text-gray-700">
+                      <User className="h-4 w-4" />
+                      <span>{user.email}</span>
+                      <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        {userRole || 'CUSTOMER'}
+                      </span>
+                    </div>
+                    <button
+                      onClick={handleRefresh}
+                      disabled={refreshing}
+                      className="p-1.5 rounded-md text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition-colors disabled:opacity-50"
+                      title="Refresh role"
+                    >
+                      <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                    </button>
                   </div>
                   <button
                     onClick={handleSignOut}
@@ -177,15 +197,36 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
                 </>
               )}
               {user ? (
-                <button
-                  onClick={() => {
-                    handleSignOut();
-                    setMobileMenuOpen(false);
-                  }}
-                  className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50"
-                >
-                  Sign Out
-                </button>
+                <>
+                  <div className="px-3 py-2 text-sm text-gray-700 flex items-center justify-between border-t border-gray-200 mt-2 pt-3">
+                    <div className="flex items-center space-x-2">
+                      <User className="h-4 w-4" />
+                      <span>{user.email}</span>
+                    </div>
+                    <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                      {userRole || 'CUSTOMER'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      await handleRefresh();
+                    }}
+                    disabled={refreshing}
+                    className="flex items-center space-x-2 w-full px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                    <span>Refresh Role</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleSignOut();
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-red-50"
+                  >
+                    Sign Out
+                  </button>
+                </>
               ) : (
                 <button
                   onClick={() => {
