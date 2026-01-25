@@ -1,4 +1,4 @@
-import { Home, Calendar, User, LogOut, Building2, Menu, X } from 'lucide-react';
+import { Home, Calendar, User, LogOut, Building2, Menu, X, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 
@@ -57,6 +57,18 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
                   >
                     <Calendar className="h-4 w-4" />
                     <span>My Bookings</span>
+                  </button>
+
+                  <button
+                    onClick={() => onNavigate('venue-management')}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      currentPage === 'venue-management'
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span>Manage Venue</span>
                   </button>
 
                   <button
@@ -132,6 +144,15 @@ export function Layout({ children, currentPage, onNavigate }: LayoutProps) {
                     className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
                   >
                     My Bookings
+                  </button>
+                  <button
+                    onClick={() => {
+                      onNavigate('venue-management');
+                      setMobileMenuOpen(false);
+                    }}
+                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-50"
+                  >
+                    Manage Venue
                   </button>
                   <button
                     onClick={() => {

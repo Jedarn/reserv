@@ -9,6 +9,7 @@ import { BookingConfirmation } from './pages/BookingConfirmation';
 import { MyBookings } from './pages/MyBookings';
 import { Admin } from './pages/Admin';
 import { VenueForm } from './pages/VenueForm';
+import { VenueManagement } from './pages/VenueManagement';
 
 type Page =
   | 'login'
@@ -18,7 +19,8 @@ type Page =
   | 'booking-confirmation'
   | 'my-bookings'
   | 'admin'
-  | 'venue-form';
+  | 'venue-form'
+  | 'venue-management';
 
 interface NavigationData {
   venueId?: string;
@@ -88,6 +90,7 @@ function AppContent() {
           onNavigate={navigate}
         />
       )}
+      {currentPage === 'venue-management' && <VenueManagement onNavigate={navigate} />}
     </Layout>
   );
 }
