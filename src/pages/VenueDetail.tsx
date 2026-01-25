@@ -233,14 +233,15 @@ export function VenueDetail({ venueId, onNavigate }: VenueDetailProps) {
                             ? 'Closed on this day'
                             : 'Select time'}
                         </option>
-                        {todayRules.map((rule) => {
-                          const slots = generateTimeSlots(rule.open_time, rule.close_time, rule.slot_duration_minutes);
-                          return slots.map((slot) => (
+                        {todayRules.flatMap((rule) =>
+                          generateTimeSlots(rule.open_time, rule.close_time, rule.slot_duration_minutes)
+                        )
+                          .filter((slot, index, self) => self.indexOf(slot) === index)
+                          .map((slot) => (
                             <option key={slot} value={slot}>
-                              {slot}
+                              {formatTime(slot)}
                             </option>
-                          ));
-                        })}
+                          ))}
                       </select>
                       {selectedDate && todayRules.length === 0 && (
                         <p className="mt-1 text-sm text-red-600">This venue is closed on the selected day</p>
@@ -285,8 +286,13 @@ export function VenueDetail({ venueId, onNavigate }: VenueDetailProps) {
 
 function generateTimeSlots(openTime: string, closeTime: string, slotDuration: number): string[] {
   const slots: string[] = [];
-  const [openHour, openMin] = openTime.split(':').map(Number);
-  const [closeHour, closeMin] = closeTime.split(':').map(Number);
+
+  const openParts = openTime.split(':');
+  const closeParts = closeTime.split(':');
+  const openHour = parseInt(openParts[0]);
+  const openMin = parseInt(openParts[1]);
+  const closeHour = parseInt(closeParts[0]);
+  const closeMin = parseInt(closeParts[1]);
 
   let currentMinutes = openHour * 60 + openMin;
   const closeMinutes = closeHour * 60 + closeMin;
@@ -294,9 +300,17 @@ function generateTimeSlots(openTime: string, closeTime: string, slotDuration: nu
   while (currentMinutes + slotDuration <= closeMinutes) {
     const hours = Math.floor(currentMinutes / 60);
     const mins = currentMinutes % 60;
-    slots.push(`${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`);
+    const timeString = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+    slots.push(timeString);
     currentMinutes += 30;
   }
 
   return slots;
+}
+
+function formatTime(time: string): string {
+  const [hours, mins] = time.split(':').map(Number);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  return `${displayHours}:${String(mins).padStart(2, '0')} ${period}`;
 }
